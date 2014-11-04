@@ -4,7 +4,7 @@
 // simply delete this if you don't need it
 // or use this idea to define your own thermistors
 #define EPISCO_K164_10k 4300.0f,298.15f,10000.0f  // B,T0,R0
-#define EPISCO_G540_100k 4036.0f,298.15f,100000.0f  // B,T0,R0
+#define EPISCO_G540_100k 4042.0f,298.15f,100000.0f  // B,T0,R0
 
 // Hotbed
 //#define HOTBED 3
@@ -28,9 +28,9 @@ float Temperature(int AnalogInputNumber,float B,float T0,float R0,float R_Balanc
     float R,T;
 
 //  R=1024.0f*R_Balance/float(analogRead(AnalogInputNumber)))-R_Balance;
-    R=R_Balance*(1024.0f/float(analogRead(AnalogInputNumber))-1);
+    R=R_Balance*(1024.00f/float(analogRead(AnalogInputNumber))-1);
 
-    T=1.0f/(1.0f/T0+(1.0f/B)*log(R/R0));
+    T=1.00f/(1.00f/T0+(1.00f/B)*log(R/R0));
     T-=273.15f;
     //T=+T;
   //   }
@@ -50,16 +50,25 @@ void setup() {
 void loop() {
 // Temperature actuelle
 float Temp=Temperature(0,EPISCO_G540_100k,100000.0f);
-Serial.println(Temp);
 
-if(consigne >= Temp) {
-   digitalWrite(HOTBED,LOW);
-}
-else {
-   digitalWrite(HOTBED,HIGH);
-}
+int delta = (consigne - Temp)*100;
+int signal_pwm = map(delta, 0, 200, 255, 0); 
 
-   
+ if(delta <= 0) {
+    analogWrite(HOTBED,255);
+ }
+ else if(delta >= 200) {
+    analogWrite(HOTBED,0);
+ }
+ else {
+   analogWrite(HOTBED,signal_pwm);
+ }
+ 
+Serial.print("Temprature : ");
+Serial.print(Temp);
+Serial.print(" | PWM : ");
+Serial.println(signal_pwm);
+
  delay(500);
 }
 
