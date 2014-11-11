@@ -1,4 +1,5 @@
 #include <math.h>
+#include <LiquidCrystal.h>
 
 // manufacturer data for episco k164 10k thermistor
 // simply delete this if you don't need it
@@ -8,11 +9,14 @@
 
 // Hotbed
 //#define HOTBED 3
-const int HOTBED =  15;
+const int HOTBED =  3;
 const int thermistance = 8;
 
 // Temparature que l'on veux obtenir
 float consigne=37;
+
+// Pin de l'écran
+LiquidCrystal lcd( 8, 9, 4, 5, 6, 7 );
 
 // Temperature function outputs float , the actual 
 // temperature
@@ -52,25 +56,39 @@ void loop() {
 // Temperature actuelle
 float Temp=Temperature(thermistance,EPISCO_G540_100k,96300.0f);
 
+// Température par rapport à la consigne (en °C) à partir de laquelle ont controle le hotbed en PWN
+int temp_pwm = 5;
+
+// Variation entre la consigne et le tempréature captée
 int delta = (consigne - Temp)*100;
+
 int signal_pwm = map(delta, 0, 500, 255, 0); 
 
  if(delta <= 0) {
-    analogWrite(HOTBED,255);
+   signal_pwm = 255;
  }
  else if(delta >= 500) {
-    analogWrite(HOTBED,0);
+   signal_pwm = 0;
  }
- else {
-   analogWrite(HOTBED,signal_pwm);
- }
- 
-//Serial.print("Temprature : ");
+ analogWrite(HOTBED,signal_pwm);
+
+// Sortie pour le graph en python
 Serial.println(Temp);
+// Sortie lisible sur le terminal
+//Serial.print("Temprature : ");
+//Serial.print(Temp);
 //Serial.print(" | PWM : ");
 //Serial.println(signal_pwm);
 
- delay(100);
+// Affichage sur l'écran
+lcd.begin(16, 2);
+lcd.print(Temp);
+lcd.print(" C");
+lcd.setCursor(0, 1);
+lcd.print("Consigne : ");
+lcd.print(consigne);
+
+delay(1000);
 }
 
 
