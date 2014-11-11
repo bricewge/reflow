@@ -3,12 +3,13 @@
 // manufacturer data for episco k164 10k thermistor
 // simply delete this if you don't need it
 // or use this idea to define your own thermistors
-#define EPISCO_K164_10k 4300.0f,298.15f,10000.0f  // B,T0,R0
-#define EPISCO_G540_100k 4042.0f,298.15f,100000.0f  // B,T0,R0
+//#define EPISCO_K164_10k 4300.0f,298.15f,10000.0f  // B,T0,R0
+#define EPISCO_G540_100k 4036.0f,298.15f,100000l// B,T0,R0
 
 // Hotbed
 //#define HOTBED 3
-const int HOTBED =  3;
+const int HOTBED =  15;
+const int thermistance = 8;
 
 // Temparature que l'on veux obtenir
 float consigne=37;
@@ -22,7 +23,7 @@ float consigne=37;
 // 5. Manufacturer R0 parameter - found in datasheet (ohms)
 // 6. Your balance resistor resistance in ohms  
 
-float Temperature(int AnalogInputNumber,float B,float T0,float R0,float R_Balance)
+float Temperature(int AnalogInputNumber,float B,float T0,long R0,float R_Balance)
 {
 //  for(int i= 0; i < 5; ++) {
     float R,T;
@@ -49,27 +50,27 @@ void setup() {
 
 void loop() {
 // Temperature actuelle
-float Temp=Temperature(0,EPISCO_G540_100k,100000.0f);
+float Temp=Temperature(thermistance,EPISCO_G540_100k,96300.0f);
 
 int delta = (consigne - Temp)*100;
-int signal_pwm = map(delta, 0, 200, 255, 0); 
+int signal_pwm = map(delta, 0, 500, 255, 0); 
 
  if(delta <= 0) {
     analogWrite(HOTBED,255);
  }
- else if(delta >= 200) {
+ else if(delta >= 500) {
     analogWrite(HOTBED,0);
  }
  else {
    analogWrite(HOTBED,signal_pwm);
  }
  
-Serial.print("Temprature : ");
-Serial.print(Temp);
-Serial.print(" | PWM : ");
-Serial.println(signal_pwm);
+//Serial.print("Temprature : ");
+Serial.println(Temp);
+//Serial.print(" | PWM : ");
+//Serial.println(signal_pwm);
 
- delay(500);
+ delay(100);
 }
 
 
