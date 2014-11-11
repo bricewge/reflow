@@ -18,6 +18,31 @@ float consigne=37;
 // Pin de l'écran
 LiquidCrystal lcd( 8, 9, 4, 5, 6, 7 );
 
+int lcd_key     = 0;
+int adc_key_in  = 0;
+#define btnRIGHT  0
+#define btnUP     1
+#define btnDOWN   2
+#define btnLEFT   3
+#define btnSELECT 4
+#define btnNONE   5
+// read the buttons
+int read_LCD_buttons()
+{
+ adc_key_in = analogRead(0);      // read the value from the sensor 
+ // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
+ // we add approx 50 to those values and check to see if we are close
+ if (adc_key_in > 1000) return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
+ // For V1.1 us this threshold
+ if (adc_key_in < 50)   return btnRIGHT;  
+ if (adc_key_in < 250)  return btnUP; 
+ if (adc_key_in < 450)  return btnDOWN; 
+ if (adc_key_in < 650)  return btnLEFT; 
+ if (adc_key_in < 850)  return btnSELECT;  
+
+ return btnNONE;  // when all others fail, return this...
+}
+
 // Temperature function outputs float , the actual 
 // temperature
 // Temperature function inputs
@@ -80,6 +105,42 @@ Serial.println(Temp);
 //Serial.print(" | PWM : ");
 //Serial.println(signal_pwm);
 
+lcd_key = read_LCD_buttons();
+// Action des bouttons
+ switch (lcd_key)               // depending on which button was pushed, we perform an action
+ {
+/*   case btnRIGHT:
+     {
+     lcd.print("RIGHT ");
+     break;
+     }
+   case btnLEFT:
+     {
+     lcd.print("LEFT   ");
+     break;
+     }*/
+   case btnUP:
+     {
+     consigne+=0.5;
+     break;
+     }
+   case btnDOWN:
+     {
+     consigne-=0.5;
+     break;
+     }
+/*   case btnSELECT:
+     {
+     lcd.print("SELECT");
+     break;
+     }
+     case btnNONE:
+     {
+     lcd.print("NONE  ");
+     break;
+     }*/
+ }
+ 
 // Affichage sur l'écran
 lcd.begin(16, 2);
 lcd.print(Temp);
