@@ -54,17 +54,21 @@ int read_LCD_buttons()
 
 float Temperature(int AnalogInputNumber,float B,float T0,long R0,float R_Balance)
 {
-//  for(int i= 0; i < 5; ++) {
-    float R,T;
+// Nombre d'itération pour faire la moyenne
+//const int iteration = 10;
+float R,T;
+//float sum_T=0;
+//  for(int i= 0; i < iteration; i++) {
 
 //  R=1024.0f*R_Balance/float(analogRead(AnalogInputNumber)))-R_Balance;
     R=R_Balance*(1024.00f/float(analogRead(AnalogInputNumber))-1);
 
     T=1.00f/(1.00f/T0+(1.00f/B)*log(R/R0));
-    T-=273.15f;
-    //T=+T;
-  //   }
-//T=T/5;
+    
+//    sum_T=T+sum_T;
+//     }
+//T=sum_T/iteration;
+T-=273.15f; // Convertir en degrés Celcius
 
   return T;
 }
@@ -149,7 +153,7 @@ lcd.setCursor(0, 1);
 lcd.print("Consigne : ");
 lcd.print(consigne);
 
-delay(1000);
+delay(100);
 }
 
 
