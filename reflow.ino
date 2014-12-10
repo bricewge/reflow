@@ -1,22 +1,21 @@
+/* * Configuration */
+/* ** Libraires */
 #include <math.h>
 #include <LiquidCrystal.h>
+#include <PID_v1.h>
 
-// manufacturer data for episco k164 10k thermistor
-// simply delete this if you don't need it
-// or use this idea to define your own thermistors
-//#define EPISCO_K164_10k 4300.0f,298.15f,10000.0f  // B,T0,R0
+/* ** Configuration de la thermistance */
+// Manufacturer data for episco k164 10k thermistor
+#define EPISCO_K164_10k 4300.0f,298.15f,10000.0f  // B,T0,R0
 #define EPISCO_G540_100k 4036.0f,298.15f,100000l// B,T0,R0
 
-// Hotbed
-//#define HOTBED 3
-const int HOTBED =  3;
-const int thermistance = 8;
+/* ** Constantes */
+const int hotbed =  3;        // Pin digital de contrôle du hotbed
+const int thermistance = 8;   // Pin analogique d'entrée de la thermistance
+double consigne= 30;          // Temparature que l'on veux obtenir
 
-// Temparature que l'on veux obtenir
-float consigne=37;
-
-// Pin de l'écran
-LiquidCrystal lcd( 8, 9, 4, 5, 6, 7 );
+/* ** Configuration de lécran */
+LiquidCrystal lcd( 8, 9, 4, 5, 6, 7 ); // Pin de l'écran
 
 int lcd_key     = 0;
 int adc_key_in  = 0;
@@ -43,6 +42,12 @@ int read_LCD_buttons()
  return btnNONE;  // when all others fail, return this...
 }
 
+//Define Variables we'll be connecting to
+double Input, Output;
+//Specify the links and initial tuning parameters
+PID myPID(&Input, &Output, &consigne,2,5,1, DIRECT);
+
+/* * Entré */
 // Temperature function outputs float , the actual 
 // temperature
 // Temperature function inputs
@@ -79,28 +84,45 @@ T-=273.15f; // Convertir en degrés Celcius
 
 void setup() {
  Serial.begin(9600);
+ 
+ Input = analogRead(thermistance);
+/* //turn the PID on
+  myPID.SetMode(AUTOMATIC);
+  */
 }
 
+/* * Sortie */
 void loop() {
 // Temperature actuelle
-float Temp=Temperature(thermistance,EPISCO_G540_100k,96300.0f);
+  float Temp=Temperature(thermistance,EPISCO_G540_100k,96300.0f);
 
+/*
+//PID
+Input = analogRead(thermistance);
+myPID.Compute();
+analogWrite(hotbed,Output);
+*/  
+
+// A remplacé par le PID
 // Température par rapport à la consigne (en °C) à partir de laquelle ont controle le hotbed en PWN
-int temp_pwm = 5;
+  int temp_pwm = 5;
 
 // Variation entre la consigne et le tempréature captée
-int delta = (consigne - Temp)*100;
+  int delta = (consigne - Temp)*100;
 
-int signal_pwm = map(delta, 0, 500, 255, 0); 
+  int signal_pwm = map(delta, 0, 500, 255, 0); 
 
- if(delta <= 0) {
-   signal_pwm = 255;
- }
- else if(delta >= 500) {
-   signal_pwm = 0;
- }
- analogWrite(HOTBED,signal_pwm);
+  if(delta <= 0) {
+    signal_pwm = 255;
+  }
+  else if(delta >= 500) {
+    signal_pwm = 0;
+  }
+  analogWrite(hotbed,signal_pwm);
 
+
+/* * Affichage */
+/* ** Graphique  */
 // Sortie pour le graph en python
 Serial.println(Temp);
 // Sortie lisible sur le terminal
@@ -109,6 +131,7 @@ Serial.println(Temp);
 //Serial.print(" | PWM : ");
 //Serial.println(signal_pwm);
 
+/* ** Écran */
 lcd_key = read_LCD_buttons();
 // Action des bouttons
  switch (lcd_key)               // depending on which button was pushed, we perform an action
